@@ -1,2 +1,2 @@
 # hengzeye
-Full stack e-commerce platform
+Full stack project: e-commerce platform
