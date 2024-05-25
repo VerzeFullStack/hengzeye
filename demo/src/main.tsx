@@ -1,10 +1,17 @@
+
 import React from 'react'
+import viteLogo from '/vite.svg'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
+import User from './features/user/User.tsx'
+import App from './components/App.tsx'
 import './index.css'
 
 import { PublicClientApplication, EventMessage, AuthenticationResult, EventType } from '@azure/msal-browser';
 import { msalConfig } from './authConfig'; 
+
+import { store } from './app/store'
+import { Provider } from 'react-redux'
+import ProductTable from './components/ProductTable.tsx'
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -26,6 +33,19 @@ msalInstance.addEventCallback((event: EventMessage) => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App msalInstance={msalInstance} />
+    <Provider store={store}>
+      <div className="header">
+        <img src={viteLogo} className="logo" alt="Vite logo" />
+        <nav>
+          <ul>
+            <li>
+              <User msalInstance={msalInstance} />
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <App />
+      <ProductTable />
+    </Provider>
   </React.StrictMode>,
 )

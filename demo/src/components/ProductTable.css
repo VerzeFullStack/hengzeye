@@ -1,0 +1,65 @@
+.main table
+{
+  margin: auto;
+  width: 100%;
+}
+
+.main table thead tr
+{
+  vertical-align: top;
+}
+
+.buyBtn
+{
+  background-color: #FF6E33;
+  color: white;
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+
+.productDetails
+{
+  width: 100%;
+  text-align: left;
+  padding: 1em;
+  background-color: rgb(224, 224, 224);
+  height: auto;
+  margin: 1em;
+}
+
+.select-none {
+  user-select: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.rounded {
+  border-radius: 0.25rem;
+}
+
+.border {
+  border-width: 1px;
+}
+
+.p-1 {
+  padding: 0.25rem;
+}
