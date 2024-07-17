@@ -19,7 +19,7 @@
 
 .logo {
   height: 4em;
-  padding: .5em;
+  padding: 0.5em;
   will-change: filter;
   transition: filter 300ms;
 }
@@ -43,7 +43,7 @@ body {
   margin: 0px;
   padding: 0px;
   list-style: none;
-  font-family: 'Questrial', sans-serif;
+  font-family: "Questrial", sans-serif;
   font-weight: 400;
   font-style: normal;
   width: auto;
@@ -102,8 +102,8 @@ button:focus-visible {
   align-items: center;
   font-family: "Proxima Nova";
   justify-content: space-between;
-  padding-left: .768rem;
-  padding-right: .60rem;
+  padding-left: 0.768rem;
+  padding-right: 0.6rem;
   float: right;
 }
 
@@ -119,4 +119,5 @@ button:focus-visible {
 .header nav ul li {
   position: relative;
   text-align: center;
+  margin: 0.5em;
 }

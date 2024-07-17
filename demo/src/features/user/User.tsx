@@ -1,100 +1,108 @@
-import { useEffect } from 'react';
-import { AuthenticatedTemplate, MsalProvider, UnauthenticatedTemplate } from '@azure/msal-react';
-import { IPublicClientApplication, InteractionStatus, SilentRequest } from "@azure/msal-browser";
+import { useEffect } from "react";
+import {
+  AuthenticatedTemplate,
+  MsalProvider,
+  UnauthenticatedTemplate,
+} from "@azure/msal-react";
+import { InteractionStatus, SilentRequest } from "@azure/msal-browser";
 import { useMsal } from "@azure/msal-react";
-import { loginRequest, b2cPolicies } from '../../authConfig';
-import { useAppSelector, useAppDispatch } from '../../app/hooks'
-import { setActiveAccount, setAccessToken, setClaims, selectUser } from './userSlice'
+import { loginRequest, b2cPolicies } from "../../authConfig";
+import { useAppSelector, useAppDispatch } from "../../app/hooks";
+import {
+  setAccessToken,
+  setClaims,
+  selectAccessToken,
+  selectClaims,
+} from "./userSlice";
+import { Link } from "react-router-dom";
+import "./User.css";
+import MsalProp from "../../dataModels/MsalProp";
 
-type UserProps = {
-    msalInstance: IPublicClientApplication
-};
-
-function LoginComponent () {
+function LoginComponent() {
   const { instance, inProgress } = useMsal();
-  const user = useAppSelector(selectUser);
-  const dispatch = useAppDispatch()
+  const claims = useAppSelector(selectClaims);
+  const accessToken = useAppSelector(selectAccessToken);
+  const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        const activeAccount = instance.getActiveAccount();
-        if (activeAccount) {
-            dispatch(setActiveAccount(activeAccount));
-            dispatch(setClaims(activeAccount?.idTokenClaims));
-        }
+  useEffect(() => {
+    const activeAccount = instance.getActiveAccount();
+    if (activeAccount) {
+      dispatch(setClaims(activeAccount?.idTokenClaims));
+    }
 
-        const accessTokenRequest: SilentRequest = {
-          scopes: loginRequest.scopes,
-          account: activeAccount || undefined,
-        };
+    if (accessToken == null) {
+      const accessTokenRequest: SilentRequest = {
+        scopes: loginRequest.scopes,
+        account: activeAccount || undefined,
+      };
 
-        instance.initialize().then(() => {instance.acquireTokenSilent(accessTokenRequest)
-        .then((result) => {
+      instance.initialize().then(() => {
+        instance.acquireTokenSilent(accessTokenRequest).then((result) => {
           // Acquire token silent success
           dispatch(setAccessToken(result.accessToken));
-        });});
+        });
+      });
+    }
+  }, [accessToken, dispatch, instance]);
 
-    }, [dispatch, instance]);
-  
   const handleLoginRedirect = () => {
     instance
-        .loginPopup({
-            ...loginRequest,
-        })
-        .then(result => {
-            dispatch(setAccessToken(result.accessToken));
-            dispatch(setActiveAccount(result.account));
-            dispatch(setClaims(result.idTokenClaims));
-        })
-        .catch(e => {
-            console.error(e);
-        });
+      .loginPopup({
+        ...loginRequest,
+      })
+      .then((result) => {
+        dispatch(setAccessToken(result.accessToken));
+        dispatch(setClaims(result.idTokenClaims));
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   };
 
   const handleLogoutRedirect = () => {
-    instance
-        .logout()
-        .catch(e => {
-            console.error(e);
-        });
+    instance.logout().catch((e) => {
+      console.error(e);
+    });
   };
 
-    const handleProfileEdit = () => {
-        if(inProgress === InteractionStatus.None){
-            // @ts-expect-error need to pass authority for acquireTokenRedirect to support B2C profile edit
-            instance.acquireTokenRedirect(b2cPolicies.authorities.editProfile);
-        }
-    };
+  const handleProfileEdit = () => {
+    if (inProgress === InteractionStatus.None) {
+      // @ts-expect-error need to pass authority for acquireTokenRedirect to support B2C profile edit
+      instance.acquireTokenRedirect(b2cPolicies.authorities.editProfile);
+    }
+  };
 
   return (
     <>
       <AuthenticatedTemplate>
-        <p>Test: {instance.getActiveAccount()?.idTokenClaims?.name}</p>
-        <div>User logged in: {user?.idTokenClaims?.name}</div>
-        <button 
-            onClick={handleLogoutRedirect}> 
-                Sign Out 
-        </button>
-        <button  
-            onClick={handleProfileEdit}> 
-                Edit Profile 
-        </button>
+        <div className="dropdown">
+          <button className="dropbtn">{claims?.name}</button>
+          <div className="dropdown-content">
+            <Link to="/inventory">Inventory</Link>
+            <a href="" onClick={handleProfileEdit}>
+              Edit Profile
+            </a>
+            <a href="" onClick={handleLogoutRedirect}>
+              Sign Out
+            </a>
+          </div>
+        </div>
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
-        <button  
-            onClick={handleLoginRedirect}> 
-                Sign In 
-        </button>
+        <li>
+          <button onClick={handleLoginRedirect}>Sign In</button>
+        </li>
       </UnauthenticatedTemplate>
     </>
-  )
+  );
 }
 
-function User(props: UserProps) {
+function User(props: MsalProp) {
   return (
     <MsalProvider instance={props.msalInstance}>
       <LoginComponent />
     </MsalProvider>
-  )
+  );
 }
 
-export default User
+export default User;

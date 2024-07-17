@@ -1,9 +1,6 @@
 
 import React from 'react'
-import viteLogo from '/vite.svg'
 import ReactDOM from 'react-dom/client'
-import User from './features/user/User.tsx'
-import App from './components/App.tsx'
 import './index.css'
 
 import { PublicClientApplication, EventMessage, AuthenticationResult, EventType } from '@azure/msal-browser';
@@ -12,6 +9,10 @@ import { msalConfig } from './authConfig';
 import { store } from './app/store'
 import { Provider } from 'react-redux'
 import ProductTable from './components/ProductTable.tsx'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import NullPage from './components/NullPage.tsx'
+import UserInventory from './features/userInventory/UserInventory.tsx'
+import Nav from './components/Nav.tsx'
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -34,18 +35,15 @@ msalInstance.addEventCallback((event: EventMessage) => {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <div className="header">
-        <img src={viteLogo} className="logo" alt="Vite logo" />
-        <nav>
-          <ul>
-            <li>
-              <User msalInstance={msalInstance} />
-            </li>
-          </ul>
-        </nav>
-      </div>
-      <App />
-      <ProductTable />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Nav msalInstance={msalInstance}/>} >
+            <Route index element={<ProductTable />} />
+            <Route path="inventory" element={<UserInventory />} />
+            <Route path="*" element={<NullPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </Provider>
   </React.StrictMode>,
 )

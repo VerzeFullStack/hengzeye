@@ -1,0 +1,4 @@
+.productDescription {
+  display: flex;
+  justify-self: flex-start;
+}

@@ -1,5 +1,5 @@
-import "./ProductTable.css";
-import { Fragment, useState, useMemo } from "react";
+import "./UserInventory.css";
+import { Fragment, useState, useMemo, useRef, useEffect } from "react";
 import {
   Column,
   ColumnDef,
@@ -11,18 +11,23 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  Row,
   getExpandedRowModel,
   SortingState,
 } from "@tanstack/react-table";
-import { Product } from "../dataModels/Product";
-import { getProducts } from "../api/GetFakeData";
-import { useAppSelector } from "../app/hooks";
-import { selectAccessToken } from "../features/user/userSlice";
+import ReactModal from "react-modal";
+import { ListingProduct } from "../../dataModels/ListingProduct";
+import { getListingProducts } from "../../api/GetFakeData";
+import { ListProductForm } from "./ListProductForm";
+import { useAppSelector } from "../../app/hooks";
+import { selectAccessToken, selectClaims } from "../../features/user/userSlice";
 
-function ProductTable() {
+ReactModal.setAppElement("#root");
+
+function UserInventory() {
+  const claims = useAppSelector(selectClaims);
   const accessToken = useAppSelector(selectAccessToken);
-  const columns = useMemo<ColumnDef<Product>[]>(
+
+  const columns = useMemo<ColumnDef<ListingProduct>[]>(
     () => [
       {
         accessorKey: "name",
@@ -35,21 +40,14 @@ function ProductTable() {
         //enableSorting: false
       },
       {
-        accessorKey: "price",
-        header: () => "Price",
-        sortUndefined: "last", //force undefined values to the end
-        sortDescFirst: false,
-        //enableColumnFilter: false
-      },
-      {
-        accessorKey: "seller",
-        header: () => "Seller",
+        accessorKey: "quantity",
+        header: () => "Quantity",
         //enableSorting: false
       },
     ],
     []
   );
-  const [data] = useState(() => getProducts(10000));
+  const [data] = useState(() => getListingProducts(10000));
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -78,21 +76,65 @@ function ProductTable() {
     // autoResetPageIndex: false, // turn off page index reset when sorting or filtering
   });
 
-  const renderSubComponent = ({ row }: { row: Row<Product> }) => {
-    return (
-      <div
-        className={"productDetails " + (row.getIsExpanded() ? "tb-expand" : "")}
-      >
-        <p>{row.original.description}</p>
-        <div style={{ textAlign: "right" }}>
-          <button className="buyBtn">Buy Now</button>
-        </div>
-      </div>
-    );
-  };
+  const subtitleRef = useRef<HTMLHeadingElement>(null);
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [selectedProductName, setSelectedProductName] = useState("");
+
+  function openModal(productName: string) {
+    setSelectedProductName(productName);
+    setIsOpen(true);
+  }
+
+  function afterOpenModal() {
+    // references are now sync'd and can be accessed.
+    if (subtitleRef.current) {
+      subtitleRef.current.style.color = "#000";
+    }
+  }
+
+  function closeModal() {
+    setSelectedProductName("");
+    setIsOpen(false);
+  }
+
+  useEffect(() => {
+    if (modalIsOpen) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+  }, [modalIsOpen]);
 
   return (
     <div className="main">
+      <>
+        <p>Account Balance: 100000</p>
+        <p>Claims: {JSON.stringify(claims)}</p>
+        <p>Access Token: {accessToken}</p>
+      </>
+      <ReactModal
+        className="modalContent"
+        overlayClassName="modalOverlay"
+        isOpen={modalIsOpen}
+        onAfterOpen={afterOpenModal}
+        onRequestClose={closeModal}
+        shouldCloseOnOverlayClick={false}
+        shouldFocusAfterRender={false}
+        contentLabel="Example Modal"
+      >
+        <h1 style={{ height: "10%" }}>List Your Product</h1>
+        <p
+          style={{
+            height: "5%",
+            paddingLeft: "10%",
+            display: "flex",
+          }}
+          ref={subtitleRef}
+        >
+          Product Name: {selectedProductName}
+        </p>
+        <ListProductForm closeModal={closeModal} />
+      </ReactModal>
       {accessToken ? (
         <>
           <table>
@@ -136,7 +178,7 @@ function ProductTable() {
                   <Fragment key={row.id}>
                     <tr
                       className="cursor-pointer"
-                      onClick={row.getToggleExpandedHandler()}
+                      onClick={() => openModal(row.original.name)}
                     >
                       {row.getVisibleCells().map((cell) => {
                         return (
@@ -148,11 +190,6 @@ function ProductTable() {
                           </td>
                         );
                       })}
-                    </tr>
-                    <tr>
-                      <td colSpan={row.getVisibleCells().length}>
-                        {renderSubComponent({ row })}
-                      </td>
                     </tr>
                   </Fragment>
                 );
@@ -287,4 +324,4 @@ function Filter({
   );
 }
 
-export default ProductTable;
+export default UserInventory;

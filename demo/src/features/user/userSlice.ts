@@ -1,37 +1,31 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { IdTokenClaims, AccountInfo } from '@azure/msal-browser';
-import type { RootState } from '../../app/store' 
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { IdTokenClaims } from "@azure/msal-browser";
+import type { RootState } from "../../app/store";
 
 export interface AuthState {
-    activeAccount: AccountInfo | null,
-    accessToken: string | null,
-    idTokenClaims: object | undefined
+  accessToken: string | null;
+  idTokenClaims: IdTokenClaims | undefined;
 }
 
 const initialState: AuthState = {
-    activeAccount: null,
-    accessToken: null,
-    idTokenClaims: undefined
+  accessToken: null,
+  idTokenClaims: undefined,
 };
 
 export const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
-   reducers: {
-    setActiveAccount(state, action: PayloadAction<AccountInfo | null>) {
-      state.activeAccount = action.payload;
-    },
+  reducers: {
     setAccessToken(state, action: PayloadAction<string | null>) {
-        state.accessToken = action.payload;
+      state.accessToken = action.payload;
     },
     setClaims(state, action: PayloadAction<IdTokenClaims | undefined>) {
-        state.idTokenClaims = action.payload;
-    }
-  }
+      state.idTokenClaims = action.payload;
+    },
+  },
 });
 
-export const { setActiveAccount, setAccessToken, setClaims } = userSlice.actions;
-export const selectUser = (state: RootState) => state.user.activeAccount;
+export const { setAccessToken, setClaims } = userSlice.actions;
 export const selectClaims = (state: RootState) => state.user.idTokenClaims;
 export const selectAccessToken = (state: RootState) => state.user.accessToken;
 export default userSlice.reducer;
