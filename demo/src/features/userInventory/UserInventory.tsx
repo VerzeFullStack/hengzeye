@@ -15,19 +15,34 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import ReactModal from "react-modal";
-import { ListingProduct } from "../../dataModels/ListingProduct";
-import { getListingProducts } from "../../api/GetFakeData";
+import { Product } from "../../dataModels/Product";
 import { ListProductForm } from "./ListProductForm";
-import { useAppSelector } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { selectAccessToken, selectClaims } from "../../features/user/userSlice";
+import {
+  fetchInventory,
+  LoadingStatus,
+  selectInventoryProducts,
+  selectInventoryStatus,
+} from "./userInventorySlice";
 
 ReactModal.setAppElement("#root");
 
 function UserInventory() {
   const claims = useAppSelector(selectClaims);
   const accessToken = useAppSelector(selectAccessToken);
+  const data = useAppSelector(selectInventoryProducts);
+  const userId = claims?.sub;
+  const dispatch = useAppDispatch();
+  const inventoryStatus = useAppSelector(selectInventoryStatus);
 
-  const columns = useMemo<ColumnDef<ListingProduct>[]>(
+  useEffect(() => {
+    if (inventoryStatus === LoadingStatus.Idle && accessToken != null) {
+      dispatch(fetchInventory(userId));
+    }
+  }, [inventoryStatus, dispatch, userId, accessToken]);
+
+  const columns = useMemo<ColumnDef<Product>[]>(
     () => [
       {
         accessorKey: "name",
@@ -39,15 +54,9 @@ function UserInventory() {
         header: () => "Category",
         //enableSorting: false
       },
-      {
-        accessorKey: "quantity",
-        header: () => "Quantity",
-        //enableSorting: false
-      },
     ],
     []
   );
-  const [data] = useState(() => getListingProducts(10000));
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -276,8 +285,8 @@ function Filter({
   column,
   table,
 }: {
-  column: Column<any, any>;
-  table: Table<any>;
+  column: Column<Product, unknown>;
+  table: Table<Product>;
 }) {
   const firstValue = table
     .getPreFilteredRowModel()

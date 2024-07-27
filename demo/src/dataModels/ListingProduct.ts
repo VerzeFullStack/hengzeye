@@ -1,7 +1,7 @@
-export type ListingProduct = {
-  name: string;
-  category: string;
+import { Product } from "./Product";
+
+export type ListingProduct = Product & {
   price: number;
-  quantity: number;
+  seller: string;
   description: string;
 };

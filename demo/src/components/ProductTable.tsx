@@ -15,14 +15,14 @@ import {
   getExpandedRowModel,
   SortingState,
 } from "@tanstack/react-table";
-import { Product } from "../dataModels/Product";
-import { getProducts } from "../api/GetFakeData";
+import { ListingProduct } from "../dataModels/ListingProduct";
+import { getListingProducts } from "../api/GetFakeData";
 import { useAppSelector } from "../app/hooks";
 import { selectAccessToken } from "../features/user/userSlice";
 
 function ProductTable() {
   const accessToken = useAppSelector(selectAccessToken);
-  const columns = useMemo<ColumnDef<Product>[]>(
+  const columns = useMemo<ColumnDef<ListingProduct>[]>(
     () => [
       {
         accessorKey: "name",
@@ -49,7 +49,7 @@ function ProductTable() {
     ],
     []
   );
-  const [data] = useState(() => getProducts(10000));
+  const [data] = useState(() => getListingProducts(10000));
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -78,7 +78,7 @@ function ProductTable() {
     // autoResetPageIndex: false, // turn off page index reset when sorting or filtering
   });
 
-  const renderSubComponent = ({ row }: { row: Row<Product> }) => {
+  const renderSubComponent = ({ row }: { row: Row<ListingProduct> }) => {
     return (
       <div
         className={"productDetails " + (row.getIsExpanded() ? "tb-expand" : "")}
@@ -239,8 +239,8 @@ function Filter({
   column,
   table,
 }: {
-  column: Column<any, any>;
-  table: Table<any>;
+  column: Column<ListingProduct, unknown>;
+  table: Table<ListingProduct>;
 }) {
   const firstValue = table
     .getPreFilteredRowModel()
